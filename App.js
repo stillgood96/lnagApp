@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Animated, TouchableOpacity } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Animated, Easing, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 
 const Container = styled.View`
@@ -17,12 +17,17 @@ const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
 
-  const y = new Animated.Value(0);
+  const [up, setUp] = useState(false);
+
+  const y = useRef(new Animated.Value(0)).current;
+
+  const toggleUp = () => setUp(prev => !prev);
   const moveUp = ()=> {
     Animated.timing(y, {
-      toValue : -200,
-      useNativeDriver : true
-    }).start()
+      toValue : up? 200 :  -200,
+      useNativeDriver : true,
+      easing : Easing.elastic(5)
+    }).start(toggleUp);
   }
 
   y.addListener( () => {console.log(y)});
