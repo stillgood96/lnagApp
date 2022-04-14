@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Animated, Easing, Pressable, TouchableOpacity } from 'react-native';
+import { Animated, Dimensions, Easing, Pressable, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 
 const Container = styled.View`
@@ -15,20 +15,47 @@ const Box = styled.View`
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
-export default function App() {
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-  const [up, setUp] = useState(false);
-  const POSITION = useRef(new Animated.ValueXY({x:0, y:300})).current;
+export default function App() {  
+  const POSITION = useRef(new Animated.ValueXY({x:-SCREEN_WIDTH/2 + 100, y:-SCREEN_HEIGHT/2 + 100})).current;
+  const topLeft = Animated.timing(POSITION, {
+      toValue: {
+        x: -SCREEN_WIDTH/2 + 100, 
+        y: -SCREEN_HEIGHT/2 + 100
+      },
+      useNativeDriver: false,
+    });
 
-  const toggleUp = () => setUp(prev => !prev);
+  const bottomLeft =  Animated.timing(POSITION, {
+    toValue: {
+      x: -SCREEN_WIDTH/2 + 100, 
+      y: SCREEN_HEIGHT/2 - 100
+    },
+    useNativeDriver: false,
+  });
+  
+  const bottomRight = Animated.timing(POSITION, {
+    toValue: {
+      x: SCREEN_WIDTH/2 - 100, 
+      y: SCREEN_HEIGHT/2 - 100
+    },
+    useNativeDriver: false,
+  });
+
+  const topRight = Animated.timing(POSITION, {
+    toValue: {
+      x: SCREEN_WIDTH/2 - 100, 
+      y: -SCREEN_HEIGHT/2 + 100
+    },
+    useNativeDriver: false,
+  });
+
   const moveUp = ()=> {
-    Animated.timing(POSITION, {
-      toValue : up? 300 :  -300,
-      useNativeDriver : false,
-      duration: 5000
-    }).start(toggleUp);
+    Animated.loop(Animated.sequence([
+       bottomLeft, bottomRight, topRight, topLeft
+    ])).start()
   }
-
 
   const rotation = POSITION.y.interpolate({
     inputRange : [-300, 300],
@@ -50,7 +77,7 @@ export default function App() {
     <Pressable onPress={moveUp}>
     <AnimatedBox  style={{
       borderRadius,
-      transform: [{rotateY : rotation},{translateY:POSITION.y}],
+      transform: [ ...POSITION.getTranslateTransform()],
       backgroundColor: bgColor
     }}></AnimatedBox>
     </Pressable>
